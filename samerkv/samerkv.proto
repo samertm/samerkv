@@ -2,7 +2,7 @@ syntax = "proto3";
 
 option go_package = "github.com/samertm/samerkv/samerkv";
 
-package helloworld;
+package samerkv;
 
 service KVStore {
 

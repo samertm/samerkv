@@ -38,7 +38,7 @@ var kVStoreSetStreamDesc = &grpc.StreamDesc{
 
 func (c *kVStoreClient) Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*SetResponse, error) {
 	out := new(SetResponse)
-	err := c.cc.Invoke(ctx, "/helloworld.KVStore/Set", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/samerkv.KVStore/Set", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ var kVStoreGetStreamDesc = &grpc.StreamDesc{
 
 func (c *kVStoreClient) Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error) {
 	out := new(GetResponse)
-	err := c.cc.Invoke(ctx, "/helloworld.KVStore/Get", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/samerkv.KVStore/Get", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ var kVStoreCreateTableStreamDesc = &grpc.StreamDesc{
 
 func (c *kVStoreClient) CreateTable(ctx context.Context, in *CreateTableRequest, opts ...grpc.CallOption) (*CreateTableResponse, error) {
 	out := new(CreateTableResponse)
-	err := c.cc.Invoke(ctx, "/helloworld.KVStore/CreateTable", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/samerkv.KVStore/CreateTable", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ var kVStoreDeleteTableStreamDesc = &grpc.StreamDesc{
 
 func (c *kVStoreClient) DeleteTable(ctx context.Context, in *DeleteTableRequest, opts ...grpc.CallOption) (*DeleteTableResponse, error) {
 	out := new(DeleteTableResponse)
-	err := c.cc.Invoke(ctx, "/helloworld.KVStore/DeleteTable", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/samerkv.KVStore/DeleteTable", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ var kVStoreListTablesStreamDesc = &grpc.StreamDesc{
 
 func (c *kVStoreClient) ListTables(ctx context.Context, in *ListTablesRequest, opts ...grpc.CallOption) (*ListTablesResponse, error) {
 	out := new(ListTablesResponse)
-	err := c.cc.Invoke(ctx, "/helloworld.KVStore/ListTables", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/samerkv.KVStore/ListTables", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +119,7 @@ func (s *KVStoreService) set(_ interface{}, ctx context.Context, dec func(interf
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     s,
-		FullMethod: "/helloworld.KVStore/Set",
+		FullMethod: "/samerkv.KVStore/Set",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return s.Set(ctx, req.(*SetRequest))
@@ -136,7 +136,7 @@ func (s *KVStoreService) get(_ interface{}, ctx context.Context, dec func(interf
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     s,
-		FullMethod: "/helloworld.KVStore/Get",
+		FullMethod: "/samerkv.KVStore/Get",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return s.Get(ctx, req.(*GetRequest))
@@ -153,7 +153,7 @@ func (s *KVStoreService) createTable(_ interface{}, ctx context.Context, dec fun
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     s,
-		FullMethod: "/helloworld.KVStore/CreateTable",
+		FullMethod: "/samerkv.KVStore/CreateTable",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return s.CreateTable(ctx, req.(*CreateTableRequest))
@@ -170,7 +170,7 @@ func (s *KVStoreService) deleteTable(_ interface{}, ctx context.Context, dec fun
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     s,
-		FullMethod: "/helloworld.KVStore/DeleteTable",
+		FullMethod: "/samerkv.KVStore/DeleteTable",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return s.DeleteTable(ctx, req.(*DeleteTableRequest))
@@ -187,7 +187,7 @@ func (s *KVStoreService) listTables(_ interface{}, ctx context.Context, dec func
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     s,
-		FullMethod: "/helloworld.KVStore/ListTables",
+		FullMethod: "/samerkv.KVStore/ListTables",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return s.ListTables(ctx, req.(*ListTablesRequest))
@@ -224,7 +224,7 @@ func RegisterKVStoreService(s grpc.ServiceRegistrar, srv *KVStoreService) {
 		}
 	}
 	sd := grpc.ServiceDesc{
-		ServiceName: "helloworld.KVStore",
+		ServiceName: "samerkv.KVStore",
 		Methods: []grpc.MethodDesc{
 			{
 				MethodName: "Set",
