@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+option go_package = "github.com/samertm/samerkv/samerkv";
+
+package helloworld;
+
+service KVStore {
+
+  rpc Set(SetRequest) returns (SetResponse) {}
+
+  rpc Get(GetRequest) returns (GetResponse) {}
+
+  rpc CreateTable(CreateTableRequest) returns (CreateTableResponse) {}
+
+  rpc DeleteTable(DeleteTableRequest) returns (DeleteTableResponse) {}
+
+  rpc ListTables(ListTablesRequest) returns (ListTablesResponse) {}
+
+}
+
+message SetRequest {
+  string key = 1;
+  string value = 2;
+  string table = 3;
+}
+
+message SetResponse {}
+
+message GetRequest {
+  string key = 1;
+  string table = 2;
+}
+
+message GetResponse {
+  string value = 1;
+}
+
+message CreateTableRequest {
+  string table = 1;
+}
+
+message CreateTableResponse {}
+
+message DeleteTableRequest {
+  string table = 1;
+}
+
+message DeleteTableResponse {}
+
+message ListTablesRequest {}
+
+message ListTablesResponse {
+  repeated string tables = 1;
+}
