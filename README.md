@@ -5,13 +5,25 @@ Science distributed systems course (Fall 2020).
 
 ## Instructions
 
-First, start the server in one shell:
+First, start the synchronous follower replica in one shell:
 
 ```
-go run ./cmd/server
+go run ./cmd/server -type=syncfollower
 ```
 
-Then, start a client in another shell:
+Then, start the asynchronous follower replica in another shell:
+
+```
+go run ./cmd/server -type=asyncfollower
+```
+
+Then, start the leader replica in another shell:
+
+```
+go run ./cmd/server -type=leader
+```
+
+Finally, start a client in another shell:
 ```
 go run ./cmd/client
 ```

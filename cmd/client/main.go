@@ -17,8 +17,10 @@ import (
 )
 
 var (
-	address         = "localhost:50051"
-	historyFilename = filepath.Join(os.TempDir(), "samerkv_history")
+	leaderAddress        = "localhost:50051"
+	syncFollowerAddress  = "localhost:50052"
+	asyncFollowerAddress = "localhost:50053"
+	historyFilename      = filepath.Join(os.TempDir(), "samerkv_history")
 )
 
 type OperationType int
@@ -175,10 +177,29 @@ func parseInput(input string) (Operation, error) {
 	return nil, nil
 }
 
-func runOperation(client pb.KVStoreClient, op Operation) (string, error) {
+type clientManager struct {
+	writeClient   pb.KVStoreClient
+	readClients   []pb.KVStoreClient
+	curReadClient int
+}
+
+func newClientManager(leaderClient, syncFollowerClient, asyncFollowerClient pb.KVStoreClient) *clientManager {
+	return &clientManager{
+		writeClient: leaderClient,
+		readClients: []pb.KVStoreClient{leaderClient, syncFollowerClient, asyncFollowerClient},
+	}
+}
+
+func (c *clientManager) readClient() pb.KVStoreClient {
+	client := c.readClients[c.curReadClient]
+	c.curReadClient = (c.curReadClient + 1) % len(c.readClients)
+	return client
+}
+
+func runOperation(cm *clientManager, op Operation) (string, error) {
 	switch o := op.(type) {
 	case getOperation:
-		resp, err := client.Get(context.Background(), &pb.GetRequest{
+		resp, err := cm.readClient().Get(context.Background(), &pb.GetRequest{
 			Key:   o.key,
 			Table: o.table,
 		})
@@ -187,7 +208,7 @@ func runOperation(client pb.KVStoreClient, op Operation) (string, error) {
 		}
 		return resp.GetValue(), nil
 	case setOperation:
-		_, err := client.Set(context.Background(), &pb.SetRequest{
+		_, err := cm.writeClient.Set(context.Background(), &pb.SetRequest{
 			Key:   o.key,
 			Value: o.val,
 			Table: o.table,
@@ -197,7 +218,7 @@ func runOperation(client pb.KVStoreClient, op Operation) (string, error) {
 		}
 		return "", nil
 	case createTableOperation:
-		_, err := client.CreateTable(context.Background(), &pb.CreateTableRequest{
+		_, err := cm.writeClient.CreateTable(context.Background(), &pb.CreateTableRequest{
 			Table: o.name,
 		})
 		if err != nil {
@@ -205,7 +226,7 @@ func runOperation(client pb.KVStoreClient, op Operation) (string, error) {
 		}
 		return "", nil
 	case deleteTableOperation:
-		_, err := client.DeleteTable(context.Background(), &pb.DeleteTableRequest{
+		_, err := cm.writeClient.DeleteTable(context.Background(), &pb.DeleteTableRequest{
 			Table: o.name,
 		})
 		if err != nil {
@@ -213,7 +234,7 @@ func runOperation(client pb.KVStoreClient, op Operation) (string, error) {
 		}
 		return "", nil
 	case listTablesOperation:
-		resp, err := client.ListTables(context.Background(), &pb.ListTablesRequest{})
+		resp, err := cm.readClient().ListTables(context.Background(), &pb.ListTablesRequest{})
 		if err != nil {
 			return "", err
 		}
@@ -242,12 +263,28 @@ func main() {
 	}
 
 	// Establish connection.
-	conn, err := grpc.Dial(address, grpc.WithInsecure(), grpc.WithBlock())
+	leaderConn, err := grpc.Dial(leaderAddress, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
-	defer conn.Close()
-	client := pb.NewKVStoreClient(conn)
+	defer leaderConn.Close()
+	leaderClient := pb.NewKVStoreClient(leaderConn)
+
+	syncFollowerConn, err := grpc.Dial(syncFollowerAddress, grpc.WithInsecure(), grpc.WithBlock())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer syncFollowerConn.Close()
+	syncFollowerClient := pb.NewKVStoreClient(syncFollowerConn)
+
+	asyncFollowerConn, err := grpc.Dial(asyncFollowerAddress, grpc.WithInsecure(), grpc.WithBlock())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer asyncFollowerConn.Close()
+	asyncFollowerClient := pb.NewKVStoreClient(asyncFollowerConn)
+
+	cm := newClientManager(leaderClient, syncFollowerClient, asyncFollowerClient)
 
 	for {
 		input, err := line.Prompt("> ")
@@ -268,7 +305,7 @@ func main() {
 		if op == nil {
 			continue
 		}
-		output, err := runOperation(client, op)
+		output, err := runOperation(cm, op)
 		if err != nil {
 			log.Printf("error running operation: %v", err)
 			continue

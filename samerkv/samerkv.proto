@@ -52,3 +52,30 @@ message ListTablesRequest {}
 message ListTablesResponse {
   repeated string tables = 1;
 }
+
+service InternalKVStore {
+  rpc GetLogCount(GetLogCountRequest) returns (GetLogCountResponse) {}
+
+  rpc ReplicateLog(ReplicateLogRequest) returns (ReplicateLogResponse) {}
+
+}
+
+message GetLogCountRequest {}
+message GetLogCountResponse {
+  int32 log_count = 1;
+}
+
+message WrappedRequest {
+  oneof req {
+    SetRequest set_req = 1;
+    CreateTableRequest create_table_req = 2;
+    DeleteTableRequest delete_table_req = 3;
+  }
+}
+
+message ReplicateLogRequest {
+  repeated WrappedRequest requests = 1;
+  int32 start_at = 2;
+}
+
+message ReplicateLogResponse {}

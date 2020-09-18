@@ -301,3 +301,151 @@ type UnstableKVStoreService interface {
 	DeleteTable(context.Context, *DeleteTableRequest) (*DeleteTableResponse, error)
 	ListTables(context.Context, *ListTablesRequest) (*ListTablesResponse, error)
 }
+
+// InternalKVStoreClient is the client API for InternalKVStore service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type InternalKVStoreClient interface {
+	GetLogCount(ctx context.Context, in *GetLogCountRequest, opts ...grpc.CallOption) (*GetLogCountResponse, error)
+	ReplicateLog(ctx context.Context, in *ReplicateLogRequest, opts ...grpc.CallOption) (*ReplicateLogResponse, error)
+}
+
+type internalKVStoreClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewInternalKVStoreClient(cc grpc.ClientConnInterface) InternalKVStoreClient {
+	return &internalKVStoreClient{cc}
+}
+
+var internalKVStoreGetLogCountStreamDesc = &grpc.StreamDesc{
+	StreamName: "GetLogCount",
+}
+
+func (c *internalKVStoreClient) GetLogCount(ctx context.Context, in *GetLogCountRequest, opts ...grpc.CallOption) (*GetLogCountResponse, error) {
+	out := new(GetLogCountResponse)
+	err := c.cc.Invoke(ctx, "/samerkv.InternalKVStore/GetLogCount", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+var internalKVStoreReplicateLogStreamDesc = &grpc.StreamDesc{
+	StreamName: "ReplicateLog",
+}
+
+func (c *internalKVStoreClient) ReplicateLog(ctx context.Context, in *ReplicateLogRequest, opts ...grpc.CallOption) (*ReplicateLogResponse, error) {
+	out := new(ReplicateLogResponse)
+	err := c.cc.Invoke(ctx, "/samerkv.InternalKVStore/ReplicateLog", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// InternalKVStoreService is the service API for InternalKVStore service.
+// Fields should be assigned to their respective handler implementations only before
+// RegisterInternalKVStoreService is called.  Any unassigned fields will result in the
+// handler for that method returning an Unimplemented error.
+type InternalKVStoreService struct {
+	GetLogCount  func(context.Context, *GetLogCountRequest) (*GetLogCountResponse, error)
+	ReplicateLog func(context.Context, *ReplicateLogRequest) (*ReplicateLogResponse, error)
+}
+
+func (s *InternalKVStoreService) getLogCount(_ interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLogCountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return s.GetLogCount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     s,
+		FullMethod: "/samerkv.InternalKVStore/GetLogCount",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return s.GetLogCount(ctx, req.(*GetLogCountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+func (s *InternalKVStoreService) replicateLog(_ interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReplicateLogRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return s.ReplicateLog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     s,
+		FullMethod: "/samerkv.InternalKVStore/ReplicateLog",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return s.ReplicateLog(ctx, req.(*ReplicateLogRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// RegisterInternalKVStoreService registers a service implementation with a gRPC server.
+func RegisterInternalKVStoreService(s grpc.ServiceRegistrar, srv *InternalKVStoreService) {
+	srvCopy := *srv
+	if srvCopy.GetLogCount == nil {
+		srvCopy.GetLogCount = func(context.Context, *GetLogCountRequest) (*GetLogCountResponse, error) {
+			return nil, status.Errorf(codes.Unimplemented, "method GetLogCount not implemented")
+		}
+	}
+	if srvCopy.ReplicateLog == nil {
+		srvCopy.ReplicateLog = func(context.Context, *ReplicateLogRequest) (*ReplicateLogResponse, error) {
+			return nil, status.Errorf(codes.Unimplemented, "method ReplicateLog not implemented")
+		}
+	}
+	sd := grpc.ServiceDesc{
+		ServiceName: "samerkv.InternalKVStore",
+		Methods: []grpc.MethodDesc{
+			{
+				MethodName: "GetLogCount",
+				Handler:    srvCopy.getLogCount,
+			},
+			{
+				MethodName: "ReplicateLog",
+				Handler:    srvCopy.replicateLog,
+			},
+		},
+		Streams:  []grpc.StreamDesc{},
+		Metadata: "samerkv/samerkv.proto",
+	}
+
+	s.RegisterService(&sd, nil)
+}
+
+// NewInternalKVStoreService creates a new InternalKVStoreService containing the
+// implemented methods of the InternalKVStore service in s.  Any unimplemented
+// methods will result in the gRPC server returning an UNIMPLEMENTED status to the client.
+// This includes situations where the method handler is misspelled or has the wrong
+// signature.  For this reason, this function should be used with great care and
+// is not recommended to be used by most users.
+func NewInternalKVStoreService(s interface{}) *InternalKVStoreService {
+	ns := &InternalKVStoreService{}
+	if h, ok := s.(interface {
+		GetLogCount(context.Context, *GetLogCountRequest) (*GetLogCountResponse, error)
+	}); ok {
+		ns.GetLogCount = h.GetLogCount
+	}
+	if h, ok := s.(interface {
+		ReplicateLog(context.Context, *ReplicateLogRequest) (*ReplicateLogResponse, error)
+	}); ok {
+		ns.ReplicateLog = h.ReplicateLog
+	}
+	return ns
+}
+
+// UnstableInternalKVStoreService is the service API for InternalKVStore service.
+// New methods may be added to this interface if they are added to the service
+// definition, which is not a backward-compatible change.  For this reason,
+// use of this type is not recommended.
+type UnstableInternalKVStoreService interface {
+	GetLogCount(context.Context, *GetLogCountRequest) (*GetLogCountResponse, error)
+	ReplicateLog(context.Context, *ReplicateLogRequest) (*ReplicateLogResponse, error)
+}
